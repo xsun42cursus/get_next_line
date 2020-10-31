@@ -6,95 +6,99 @@
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/13 23:45:25 by xsun              #+#    #+#             */
-/*   Updated: 2020/10/31 13:13:41 by s.son             ####     ::::  .SUM    */
+/*   Updated: 2020/10/31 16:47:44 by s.son             ####     ::::  .SUM    */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int check_save(char **save, char **line, int fd)
+int update_line_save(char **line, char **save, long long endl_pos)
 {
-	long long	ret;
-	char		*tmp;
-	char		*buf;
-	long long	endl_pos;
-
-	if (*save && (endl_pos = ft_strchr(*save, '\n')) != -1)
+	char * tmp;
+	*line = ft_strappend(NULL, *save, 0, endl_pos);
+	if (!*line)
 	{
-		*line = ft_strappend(NULL, *save, 0, endl_pos);
-		if (ft_strlen(*save) > endl_pos + 1)
-			tmp = ft_strdup(&(*save)[endl_pos+1]);//&(*save)[endl_pos+1] == ""
-		else
-			tmp = NULL;
+		free(*save);
+		return(-1);
+	}
+	if ((*save)[endl_pos + 1])
+	{
+		tmp = ft_strdup(&((*save)[endl_pos + 1]));
 		free(*save);
 		*save = tmp;
-		return (1);
 	}
-	if ((buf = malloc(sizeof(char) * (BUFFER_SIZE + 1))) == NULL)
+	else
 	{
 		free(*save);
-		return (-1);
+		*save = NULL;
 	}
-	if ((ret = read(fd, buf, BUFFER_SIZE)) < 0)
-	{
-		free(buf);
-		return (-1);
-	}
-	if (ret == 0 && !*save)
-	{
-		free(buf);
-		return (0);
-	}
-	*save = (*save) ? *save : ft_strdup("");
-	if (is_finish(&buf, save, line, ret))
-		return (1);
-	return (2);
+	return (1);
 }
 
-int check_error(long long ret, char **buf, char **save, char **line)
+int update_save_by_buf(char **save, char **buf, ssize_t read_size)
 {
-	if (ret < 0)
+	char *tmp;
+
+	*save = (*save) ? *save : ft_strdup("");
+	tmp = ft_strappend(*save, *buf, ft_strlen(*save), read_size);
+	if (!tmp)
 	{
-		free(*buf);
 		free(*save);
+		free(*buf);
 		return (-1);
 	}
-	(*buf)[ret] = '\0';
-	if (ret == 0)
+	free(*save);
+	free(*buf);
+	*save = tmp;
+	return (1);
+}
+
+int check_read(ssize_t ret, char **line, char **save, char **buf)
+{
+	if (ret <= 0)
 	{
-		*line = *save;
-		*save = NULL;
 		free(*buf);
-		return (0);
+		if (*save)
+		{
+			*line = *save;
+			*save = NULL;
+		}
+		else if(ret == 0)
+			*line = ft_strdup("");
+		else
+			*line = NULL;
 	}
-	return (2);
+	return (ret);
 }
 
 int		get_next_line(int fd, char **line)
 {
-	long long ret;
-	int err;
-	static char *save;
-	char *buf;
+	static char	*save;
+	ssize_t		endl_pos;
+	char		*buf;
+	ssize_t		ret;
 
-	if (BUFFER_SIZE <= 0)
+	if (BUFFER_SIZE == 0 || line == NULL)
 	{
 		free(save);
 		return (-1);
 	}
-	if((ret = (long long)(check_save(&save, line, fd))) != 2)
-		return (ret);
-	while(1)
+	if (save && (endl_pos = ft_strchr(save, '\n')) != -1)
+		return (update_line_save(line, &save, endl_pos));
+	while (1)
 	{
 		if ((buf = malloc(sizeof(char) * (BUFFER_SIZE + 1))) == NULL)
+		{
+			free(save);
+			*line = NULL;
 			return (-1);
-		ret = read(fd, buf, BUFFER_SIZE);
-		if (ret <= 0)
-			if ((err = check_error(ret, &buf, &save, line)) != 2)
-				return (err);
-		buf[ret] = '\0';
-		if(is_finish(&buf, &save, line, ret))
-			return (1);
+		}
+		if ((ret = check_read(read(fd, buf, BUFFER_SIZE), line, &save, &buf)) <= 0)
+			return (ret);
+		if (update_save_by_buf(&save, &buf, ret) == -1)
+			return (-1);
+		if ((endl_pos = ft_strchr(save, '\n')) != -1)
+			return (update_line_save(line, &save, endl_pos));
 	}
 	return (0);
 }
