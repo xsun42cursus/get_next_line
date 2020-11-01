@@ -6,11 +6,29 @@
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/31 17:23:55 by xsun              #+#    #+#             */
-/*   Updated: 2020/11/01 18:29:47 by s.son             ####     ::::  .SUM    */
+/*   Updated: 2020/11/01 19:16:53 by s.son             ####     ::::  .SUM    */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
+
+static int		check_read(ssize_t ret, char **line, char **save, char **buf)
+{
+	if (ret <= 0)
+	{
+		(void)(smart_free(buf, NULL, 0));
+		if (*save)
+		{
+			*line = *save;
+			*save = NULL;
+		}
+		else if(ret == 0)
+			*line = ft_strappend("", NULL, 1, 0);
+		else
+			*line = NULL;
+	}
+	return (int)(ret);
+}
 
 static int		each_gnl(int fd, char **save, char **line)
 {
@@ -29,10 +47,9 @@ static int		each_gnl(int fd, char **save, char **line)
 			*line = NULL;
 			return (smart_free(save, NULL, -1));
 		}
-		if ((ret = check_read(read(fd, buf, BUFFER_SIZE), line, save, &buf)) <= 0)
-			return (ret);
-		if (update_save_by_buf(save, &buf, ret) == -1)
-			return (-1);
+		ret = check_read(read(fd, buf, BUFFER_SIZE), line, save, &buf);
+		if (update_save_by_buf(save, &buf, &ret) <= 0)
+			return (int)(ret);
 		if ((endl_pos = ft_strchr(*save, '\n')) != -1)
 			return (update_line_save(line, save, endl_pos));
 	}
