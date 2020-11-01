@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line_bonus.c                                ::    ##    #==#    */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/10/31 17:23:55 by xsun              #+#    #+#             */
-/*   Updated: 2020/11/01 19:16:53 by s.son             ####     ::::  .SUM    */
+/*   Created: 2020/11/01 19:42:34 by xsun              #+#    #+#             */
+/*   Updated: 2020/11/01 19:55:01 by xsun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int		check_read(ssize_t ret, char **line, char **save, char **buf)
 			*line = *save;
 			*save = NULL;
 		}
-		else if(ret == 0)
+		else if (ret == 0)
 			*line = ft_strappend("", NULL, 1, 0);
 		else
 			*line = NULL;
@@ -56,11 +56,11 @@ static int		each_gnl(int fd, char **save, char **line)
 	return (0);
 }
 
-static t_fdList	*ft_listnew(int fd)
+static t_fdlist	*ft_listnew(int fd)
 {
-	t_fdList	*fd_list;
+	t_fdlist	*fd_list;
 
-	if ((fd_list = malloc(sizeof(t_fdList))) == NULL)
+	if ((fd_list = malloc(sizeof(t_fdlist))) == NULL)
 		return (NULL);
 	fd_list->next = NULL;
 	fd_list->save = NULL;
@@ -68,9 +68,9 @@ static t_fdList	*ft_listnew(int fd)
 	return (fd_list);
 }
 
-static void		ft_clearlst(t_fdList **del, t_fdList **from)
+static void		ft_clearlst(t_fdlist **del, t_fdlist **from)
 {
-	t_fdList	*head;
+	t_fdlist	*head;
 
 	head = *from;
 	free((*del)->save);
@@ -78,7 +78,7 @@ static void		ft_clearlst(t_fdList **del, t_fdList **from)
 	if ((*from)->fd == (*del)->fd)
 		*from = (*del)->next;
 	else
-		while(head->next)
+		while (head->next)
 		{
 			if (head->next->fd != (*del)->fd)
 			{
@@ -93,11 +93,11 @@ static void		ft_clearlst(t_fdList **del, t_fdList **from)
 	*del = NULL;
 }
 
-int			get_next_line(int fd, char **line)
+int				get_next_line(int fd, char **line)
 {
-	static t_fdList	*fd_list;
-	t_fdList		*head;
-	int				ret;;
+	static t_fdlist	*fd_list;
+	t_fdlist		*head;
+	int				ret;
 
 	head = fd_list;
 	while (head && head->fd != fd)

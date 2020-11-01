@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                      ::    ##    #==#    */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/01 14:14:46 by xsun              #+#    #+#             */
-/*   Updated: 2020/11/01 19:05:03 by s.son             ####     ::::  .SUM    */
+/*   Created: 2020/11/01 19:41:59 by xsun              #+#    #+#             */
+/*   Updated: 2020/11/01 19:42:01 by xsun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int		check_read(ssize_t ret, char **line, char **save, char **buf)
 			*line = *save;
 			*save = NULL;
 		}
-		else if(ret == 0)
+		else if (ret == 0)
 			*line = ft_strappend("", NULL, 1, 0);
 		else
 			*line = NULL;
@@ -30,7 +30,7 @@ static int		check_read(ssize_t ret, char **line, char **save, char **buf)
 	return (int)(ret);
 }
 
-int		get_next_line(int fd, char **line)
+int				get_next_line(int fd, char **line)
 {
 	static char	*save;
 	ssize_t		endl_pos;

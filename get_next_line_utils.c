@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line_utils.c                                ::    ##    #==#    */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/01 18:02:20 by xsun              #+#    #+#             */
-/*   Updated: 2020/11/01 19:15:10 by s.son             ####     ::::  .SUM    */
+/*   Created: 2020/11/01 19:42:46 by xsun              #+#    #+#             */
+/*   Updated: 2020/11/01 19:53:08 by xsun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,14 @@ ssize_t	ft_strchr(const char *s, char c)
 	ssize_t len;
 
 	len = 0;
-	while(*s)
+	while (*s)
 	{
 		if (*s == c)
 			return (len);
 		s++;
 		++len;
 	}
-	if(c == *s)
+	if (c == *s)
 		return (len);
 	return (-1);
 }
@@ -67,17 +67,20 @@ char	*ft_strappend(char *l, char *r, size_t len_l, size_t len_r)
 int		update_line_save(char **line, char **save, long long endl_pos)
 {
 	char	*tmp;
+	char	*post_endl;
+
 	*line = ft_strappend(NULL, *save, 0, endl_pos);
 	if (!*line)
-		return (smart_free(save,NULL, -1));
+		return (smart_free(save, NULL, -1));
 	if ((*save)[endl_pos + 1])
 	{
-		tmp = ft_strappend(&((*save)[endl_pos + 1]), NULL, ft_strchr(&((*save)[endl_pos + 1]), 0), 0);
-		(void)(smart_free(save,NULL, 0));
+		post_endl = &((*save)[endl_pos + 1]);
+		tmp = ft_strappend(post_endl, NULL, ft_strchr(post_endl, 0), 0);
+		(void)(smart_free(save, NULL, 0));
 		*save = tmp;
 	}
 	else
-		(void)(smart_free(save,NULL, 0));
+		(void)(smart_free(save, NULL, 0));
 	return (1);
 }
 
@@ -87,7 +90,7 @@ ssize_t	update_save_by_buf(char **save, char **buf, ssize_t *read_size)
 
 	if (*read_size <= 0)
 		return (*read_size);
-	*save = (*save) ? *save : ft_strappend("", NULL, 1,0);
+	*save = (*save) ? *save : ft_strappend("", NULL, 1, 0);
 	tmp = ft_strappend(*save, *buf, ft_strchr(*save, 0), *read_size);
 	if (!tmp)
 		return (smart_free(save, buf, -1));
