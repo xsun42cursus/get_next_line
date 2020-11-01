@@ -6,71 +6,12 @@
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/31 17:23:55 by xsun              #+#    #+#             */
-/*   Updated: 2020/10/31 18:46:34 by s.son             ####     ::::  .SUM    */
+/*   Updated: 2020/11/01 17:52:28 by s.son             ####     ::::  .SUM    */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 #include <stdio.h>
-
-int update_line_save(char **line, char **save, long long endl_pos)
-{
-	char * tmp;
-	*line = ft_strappend(NULL, *save, 0, endl_pos);
-	if (!*line)
-	{
-		free(*save);
-		return(-1);
-	}
-	if ((*save)[endl_pos + 1])
-	{
-		tmp = ft_strdup(&((*save)[endl_pos + 1]));
-		free(*save);
-		*save = tmp;
-	}
-	else
-	{
-		free(*save);
-		*save = NULL;
-	}
-	return (1);
-}
-
-int update_save_by_buf(char **save, char **buf, ssize_t read_size)
-{
-	char *tmp;
-
-	*save = (*save) ? *save : ft_strdup("");
-	tmp = ft_strappend(*save, *buf, ft_strlen(*save), read_size);
-	if (!tmp)
-	{
-		free(*save);
-		free(*buf);
-		return (-1);
-	}
-	free(*save);
-	free(*buf);
-	*save = tmp;
-	return (1);
-}
-
-int check_read(ssize_t ret, char **line, char **save, char **buf)
-{
-	if (ret <= 0)
-	{
-		free(*buf);
-		if (*save)
-		{
-			*line = *save;
-			*save = NULL;
-		}
-		else if(ret == 0)
-			*line = ft_strdup("");
-		else
-			*line = NULL;
-	}
-	return (ret);
-}
 
 int		gnl(int fd, char **save, char **line)
 {
@@ -115,63 +56,100 @@ t_fdList *ft_listnew(int fd)
 	return (fd_list);
 }
 
-t_fdList *find_list(t_fdList *list, int fd)
+//t_fdList *find_list(t_fdList *list, int fd)
+//{
+//	t_fdList *head;
+//
+//	head = list;
+//	while (head)
+//	{
+//		if (head->fd == fd)
+//		{
+//			return (head);
+//		}
+//		head = head->next;
+//	}
+//	return (NULL);
+//}
+
+void ft_clearlst(t_fdList **del, t_fdList **from)
 {
 	t_fdList *head;
 
-	head = list;
-	while (head)
-	{
-		if (head->fd == fd)
+	head = *from;
+	free((*del)->save);
+	printf("freed save\n");
+	(*del)->save = NULL;
+	if ((*from)->fd == (*del)->fd)
+		*from = (*del)->next;
+	else
+		while(head->next)
 		{
-			return (head);
+			if (head->next->fd != (*del)->fd)
+			{
+				head->next = (*del)->next;
+				*del = NULL;
+				break ;
+			}
+			head = head->next;
 		}
-		head = head->next;
-	}
-	return (NULL);
+	(*del)->next = NULL;
+	free(*del);
+	printf("freed lst\n");
+	*del = NULL;
+	printf("deleted lst\n");
 }
-
-void ft_clearlst(t_fdList **lst)
-{
-	t_fdList *head;
-	t_fdList *tmp;
-
-	head = *lst;
-	if (!lst)
-		return ;
-	while (head)
-	{
-		tmp = head->next;
-		head->next = NULL;
-		free(head);
-		head = tmp;
-	}
-	*lst = NULL;
-}
+	//head = *lst;
+	//if (!lst)
+	//	return ;
+	//while (head)
+	//{
+	//	tmp = head->next;
+	//	head->next = NULL;
+	//	free(head);
+	//	head = tmp;
+	//}
+	//*lst = NULL;
+//}
 
 int		get_next_line(int fd, char **line)
 {
 	static t_fdList	*fd_list;
-	t_fdList		*tmp;
+	t_fdList		*head;
 	int				ret;;
 
-	if (!fd_list)
+	head = fd_list;
+	while (head && head->fd != fd)
 	{
-		if ((fd_list = ft_listnew(fd)) == NULL)
-			return (-1);
-		ret = gnl(fd_list->fd, &fd_list->save, line);
+		head = head->next;
 	}
-	else
+	if (!head)
 	{
-		if((tmp = find_list(fd_list, fd)) == NULL)
-		{
-			tmp = ft_listnew(fd);
-			tmp->next = fd_list;
-			fd_list = tmp;
-		}
-		ret = gnl(tmp->fd, &tmp->save, line);
+		head = ft_listnew(fd);
+		head->next = fd_list;
+		fd_list = head;
 	}
-	if (ret == -1)
-		ft_clearlst(&fd_list);
+	ret = gnl(head->fd, &head->save, line);
+	//if (ret == -1)
+	//	ft_clearlst(&head, &fd_list);
+
+	//if (!fd_list)
+	//{
+	//	if ((fd_list = ft_listnew(fd)) == NULL)
+	//		return (-1);
+	//	ret = gnl(fd_list->fd, &fd_list->save, line);
+	//}
+	//else
+	//{
+	//	if((tmp = find_list(fd_list, fd)) == NULL)
+	//	{
+	//		tmp = ft_listnew(fd);
+	//		tmp->next = fd_list;
+	//		fd_list = tmp;
+	//	}
+	//	ret = gnl(tmp->fd, &tmp->save, line);
+	//}
+	if (ret <= 0)
+		ft_clearlst(&head, &fd_list);
 	return (ret);
 }

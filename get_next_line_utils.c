@@ -1,30 +1,31 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                                ::    ##    #==#    */
+/*                                                    +:+ +:+         +:+     */
+/*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/11/01 18:02:20 by xsun              #+#    #+#             */
+/*   Updated: 2020/11/01 18:02:31 by s.son             ####     ::::  .SUM    */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
-size_t ft_strlen(const char *s)
+ssize_t ft_strchr(const char *s, char c)
 {
-	size_t len;
+	ssize_t len;
 
 	len = 0;
 	while(*s)
 	{
+		if (*s == c)
+			return (len);
 		s++;
 		++len;
 	}
-	return (len);
-}
-
-ssize_t ft_strchr(const char *s, char c)
-{
-	ssize_t i;
-	i = 0;
-	while(s[i])
-	{
-		if (s[i] == c)
-			return (i);
-		++i;
-	}
-	if(c == s[i])
-		return (i);
+	if(c == *s)
+		return (len);
 	return (-1);
 }
 
@@ -48,21 +49,61 @@ char *ft_strappend(char *l, char *r, size_t len_l, size_t len_r)
 	return (append);
 }
 
-char *ft_strdup(const char *s)
+int update_line_save(char **line, char **save, long long endl_pos)
 {
-	size_t len;
-	char *ret;
-	size_t i;
-
-	len = ft_strlen(s);
-	if ((ret = malloc(sizeof(char) * (len + 1))) == NULL)
-		return (NULL);
-	i = 0;
-	while(s[i])
+	char * tmp;
+	*line = ft_strappend(NULL, *save, 0, endl_pos);
+	if (!*line)
 	{
-		ret[i] = s[i];
-		++i;
+		free(*save);
+		return(-1);
 	}
-	ret[i] = '\0';
+	if ((*save)[endl_pos + 1])
+	{
+		tmp = ft_strappend(&((*save)[endl_pos + 1]), NULL, ft_strchr(&((*save)[endl_pos + 1]), 0), 0);
+		free(*save);
+		*save = tmp;
+	}
+	else
+	{
+		free(*save);
+		*save = NULL;
+	}
+	return (1);
+}
+
+int update_save_by_buf(char **save, char **buf, ssize_t read_size)
+{
+	char *tmp;
+
+	*save = (*save) ? *save : ft_strappend("", NULL, 1,0);
+	tmp = ft_strappend(*save, *buf, ft_strchr(*save, 0), read_size);
+	if (!tmp)
+	{
+		free(*save);
+		free(*buf);
+		return (-1);
+	}
+	free(*save);
+	free(*buf);
+	*save = tmp;
+	return (1);
+}
+
+int check_read(ssize_t ret, char **line, char **save, char **buf)
+{
+	if (ret <= 0)
+	{
+		free(*buf);
+		if (*save)
+		{
+			*line = *save;
+			*save = NULL;
+		}
+		else if(ret == 0)
+			*line = ft_strappend("", NULL, 1, 0);
+		else
+			*line = NULL;
+	}
 	return (ret);
 }
