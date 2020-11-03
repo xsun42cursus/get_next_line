@@ -6,12 +6,13 @@
 /*   By: xsun <xiaobai@student.42tokyo.jp>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/01 19:42:34 by xsun              #+#    #+#             */
-/*   Updated: 2020/11/01 19:55:01 by xsun             ###   ########.fr       */
+/*   Updated: 2020/11/03 12:37:49 by xsun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
+#include <stdio.h>
 static int		check_read(ssize_t ret, char **line, char **save, char **buf)
 {
 	if (ret <= 0)
@@ -78,16 +79,17 @@ static void		ft_clearlst(t_fdlist **del, t_fdlist **from)
 	if ((*from)->fd == (*del)->fd)
 		*from = (*del)->next;
 	else
+	{
 		while (head->next)
 		{
-			if (head->next->fd != (*del)->fd)
+			if (head->next->fd == (*del)->fd)
 			{
 				head->next = (*del)->next;
-				*del = NULL;
 				break ;
 			}
 			head = head->next;
 		}
+	}
 	(*del)->next = NULL;
 	free(*del);
 	*del = NULL;
